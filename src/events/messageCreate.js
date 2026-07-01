@@ -11,6 +11,7 @@ import { getGuildConfig } from '../services/guildConfig.js';
 import { enforceAbuseProtection, formatCooldownDuration } from '../utils/abuseProtection.js';
 import { createEmbed } from '../utils/embeds.js';
 import { isCommandEnabled } from '../services/commandAccessService.js';
+import { getFromDb, getAFKKey } from '../utils/database.js';
 import {
   getCountingGameConfig,
   saveCountingGameConfig,
@@ -33,6 +34,8 @@ export default {
       if (countingProcessed) {
         return;
       }
+
+      await handleAFKMentions(message, client);
 
       await handlePrefixCommand(message, client);
 
@@ -227,4 +230,47 @@ async function handleLeveling(message, client) {
   } catch (error) {
     logger.error('Error handling leveling for message:', error);
   }
+}
+
+async function handleAFKMentions(message, client) {
+  try {
+    if (!message.mentions || message.mentions.size === 0) {
+      return;
+    }
+
+    const guildId = message.guild.id;
+    const afkNotifications = [];
+
+    for (const mentionedUser of message.mentions.users.values()) {
+      if (mentionedUser.bot) continue;
+
+      const afkKey = getAFKKey(guildId, mentionedUser.id);
+      const afkData = await getFromDb(afkKey);
+
+      if (afkData) {
+        afkNotifications.push({
+          user: mentionedUser,
+          reason: afkData.reason || 'No reason provided'
+        });
+      }
+    }
+
+    if (afkNotifications.length === 0) {
+      return;
+    }
+
+    const notificationText = afkNotifications
+      .map(({ user, reason }) => `**${user.username}** is AFK: ${reason}`)
+      .join('\n');
+
+    const embed = createEmbed({
+      title: '⏰ AFK Notification',
+      description: notificationText
+    });
+
+    await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } }).catch(() => {});
+  } catch (error) {
+    logger.error('Error handling AFK mentions:', error);
+  }
+}
 }

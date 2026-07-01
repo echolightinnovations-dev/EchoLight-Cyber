@@ -1,6 +1,6 @@
-# TitanBot - Ultimate Discord Bot
+# EchoLight Cyber - Ultimate Discord Bot
 
-**TitanBot** is a powerful, feature-rich Discord bot designed to enhance your server experience with comprehensive moderation tools, engaging economy systems, utility features, and much more. Built with modern Discord.js v14 and PostgreSQL for optimal performance and data persistence.
+**EchoLight Cyber** is a powerful, feature-rich Discord bot designed to enhance your server experience with comprehensive moderation tools, engaging economy systems, utility features, and much more. Built with modern Discord.js v14 and PostgreSQL for optimal performance and data persistence.
 
 [![Support Server](https://img.shields.io/badge/-Support%20Server-%235865F2?logo=discord&logoColor=white&style=flat-square&logoWidth=20)](https://discord.gg/8kJBYhTGW9)
 [![Discord.js](https://img.shields.io/npm/v/discord.js?style=flat-square&labelColor=%23202225&color=%23202225&logo=npm&logoColor=white&logoWidth=20)](https://www.npmjs.com/package/discord.js)
@@ -18,7 +18,7 @@
 <a name="features-overview"></a>
 ## Features Overview
 
-TitanBot offers a complete suite of tools for Discord server management and community engagement:
+EchoLight Cyber offers a complete suite of tools for Discord server management and community engagement:
 
 <table>
 <tr>
@@ -76,6 +76,7 @@ TitanBot offers a complete suite of tools for Discord server management and comm
 - **Report System** - Report issues to staff
 - **Todo Lists** - Personal task management
 - **First Message** - Jump to channel's first message
+- **AFK Status** - Set AFK status with reason, users are notified when mentioned
 
 ### Welcome System
 - **Welcome Messages** - Greet new members
@@ -96,7 +97,7 @@ TitanBot offers a complete suite of tools for Discord server management and comm
 
 ### Video Tutorial
 For a detailed step-by-step setup guide, watch our comprehensive video tutorial:
-[**TitanBot Setup Tutorial**](https://www.youtube.com/@TouchDisc)
+[**EchoLight Cyber Setup Tutorial**](https://www.youtube.com/@TouchDisc)
 
 ## Docker Deployment (Recommended)
 
@@ -104,8 +105,8 @@ TitanBot is fully containerized for easy deployment.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/codebymitch/TitanBot.git
-   cd TitanBot
+   git clone https://github.com/codebymitch/EchoLight-Cyber.git
+   cd EchoLight-Cyber
    ```
 
 2. **Configure environment variables:**
@@ -138,7 +139,7 @@ Music uses [Lavalink v4](https://github.com/lavalink-devs/Lavalink) via [Riffy](
 The bot is automatically published to GitHub Container Registry on every push to main.
 
 ```bash
-docker pull ghcr.io/codebymitch/titanbot:main
+docker pull ghcr.io/codebymitch/echolight-cyber:main
 ```
 
 <a name="manual-installation-steps"></a>
