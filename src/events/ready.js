@@ -49,6 +49,7 @@ export default {
       );
 
       startupLog('Registering slash commands from ready event...');
+      startupLog(`Ready registration target: guilds=${client.guilds.cache.size}, multiGuild=${client.config?.bot?.multiGuild || process.env.MULTI_GUILD === 'true'}`);
       const { clientId, guildId, multiGuild } = client.config?.bot || {};
       const effectiveGuildId = guildId || process.env.GUILD_ID || null;
 

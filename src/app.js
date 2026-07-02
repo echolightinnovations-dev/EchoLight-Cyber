@@ -79,6 +79,7 @@ class TitanBot extends Client {
       startupLog('Loading commands...');
       await loadCommands(this);
       startupLog(`Commands loaded: ${this.commands.size}`);
+      startupLog(`Loaded command names: ${Array.from(this.commands.keys()).join(', ')}`);
       
       startupLog('Loading handlers...');
       await this.loadHandlers();
@@ -95,6 +96,7 @@ class TitanBot extends Client {
       startupLog('Discord client is ready');
       
       startupLog('Registering slash commands...');
+      startupLog(`Registration config: multiGuild=${this.config.bot.multiGuild}, guildId=${this.config.bot.guildId || process.env.GUILD_ID || 'none'}`);
       await this.registerCommands();
       if (this.config.bot.multiGuild) {
         startupLog('Multi-guild mode enabled — slash commands registered globally');
