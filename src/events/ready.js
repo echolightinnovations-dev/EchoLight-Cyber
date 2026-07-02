@@ -5,6 +5,7 @@ import { reconcileReactionRoleMessages } from "../services/reactionRoleService.j
 import { reconcileTicketPanels, reconcileVerificationPanels, reconcileReactionRolePanelHealth } from "../services/panelHealthService.js";
 import { reconcileLevelRoles } from "../services/levelRoleSyncService.js";
 import { initRiffyAfterReady } from "../services/music/riffySetup.js";
+import { registerCommands as registerSlashCommands } from '../handlers/commandLoader.js';
 
 export default {
   name: Events.ClientReady,
@@ -46,6 +47,23 @@ export default {
       startupLog(
         `Level role sync: scanned ${levelRoleSummary.scannedGuilds} guilds, pruned ${levelRoleSummary.prunedRewardEntries} stale rewards, re-awarded ${levelRoleSummary.rolesReAwarded} roles, errors ${levelRoleSummary.errors}`
       );
+
+      startupLog('Registering slash commands from ready event...');
+      const { clientId, guildId, multiGuild } = client.config?.bot || {};
+      const effectiveGuildId = guildId || process.env.GUILD_ID || null;
+
+      if (multiGuild || process.env.MULTI_GUILD === 'true') {
+        await registerSlashCommands(client, { clientId, multiGuild: true });
+      } else if (effectiveGuildId) {
+        await registerSlashCommands(client, { clientId, guildId: effectiveGuildId, multiGuild: false });
+      } else {
+        const joinedGuildIds = Array.from(client.guilds.cache.keys());
+        const uniqueGuildIds = [...new Set(joinedGuildIds.filter(Boolean))];
+        for (const targetGuildId of uniqueGuildIds) {
+          await registerSlashCommands(client, { clientId, guildId: targetGuildId, multiGuild: false });
+        }
+      }
+      startupLog('Slash command registration from ready event complete');
     } catch (error) {
       logger.error("Error in ready event:", error);
     }
