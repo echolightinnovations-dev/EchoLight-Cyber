@@ -54,6 +54,11 @@ export const botConfig = {
   },
 
   // =========================
+  // DIRECT MESSAGE ROUTING
+  // =========================
+  anonymousDmChannelId: process.env.ANONYMOUS_DM_CHANNEL_ID || null,
+
+  // =========================
   // APPLICATIONS SYSTEM
   // =========================
   applications: {

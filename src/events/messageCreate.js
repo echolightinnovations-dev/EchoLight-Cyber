@@ -11,7 +11,7 @@ import { getGuildConfig } from '../services/guildConfig.js';
 import { enforceAbuseProtection, formatCooldownDuration } from '../utils/abuseProtection.js';
 import { createEmbed } from '../utils/embeds.js';
 import { isCommandEnabled } from '../services/commandAccessService.js';
-import { getFromDb, getAFKKey } from '../utils/database.js';
+import { getFromDb, deleteFromDb, getAFKKey } from '../utils/database.js';
 import {
   getCountingGameConfig,
   saveCountingGameConfig,
@@ -26,9 +26,16 @@ export default {
   name: Events.MessageCreate,
   async execute(message, client) {
     try {
-      if (message.author.bot || !message.guild) return;
+      if (message.author.bot) return;
+
+      if (!message.guild) {
+        await handleAnonymousDirectMessage(message, client);
+        return;
+      }
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
+
+      await handleRemoveAFKStatus(message, client);
 
       const countingProcessed = await handleCountingGame(message, client);
       if (countingProcessed) {
@@ -250,7 +257,8 @@ async function handleAFKMentions(message, client) {
       if (afkData) {
         afkNotifications.push({
           user: mentionedUser,
-          reason: afkData.reason || 'No reason provided'
+          reason: afkData.reason || 'No reason provided',
+          timestamp: afkData.setAt ? Math.floor(new Date(afkData.setAt).getTime() / 1000) : Math.floor(Date.now() / 1000),
         });
       }
     }
@@ -260,7 +268,7 @@ async function handleAFKMentions(message, client) {
     }
 
     const notificationText = afkNotifications
-      .map(({ user, reason }) => `**${user.username}** is AFK: ${reason}`)
+      .map(({ user, reason, timestamp }) => `**${user.username}** is currently AFK: **${reason}** (<t:${timestamp}:R>)`)
       .join('\n');
 
     const embed = createEmbed({
@@ -273,4 +281,65 @@ async function handleAFKMentions(message, client) {
     logger.error('Error handling AFK mentions:', error);
   }
 }
+
+async function handleRemoveAFKStatus(message, client) {
+  try {
+    const afkKey = getAFKKey(message.guild.id, message.author.id);
+    const afkData = await getFromDb(afkKey);
+
+    if (!afkData) {
+      return;
+    }
+
+    await deleteFromDb(afkKey);
+
+    const notification = await message.reply({
+      content: 'Welcome back! I have removed your AFK status.',
+      allowedMentions: { repliedUser: false },
+    });
+
+    setTimeout(() => notification.delete().catch(() => {}), 5000);
+  } catch (error) {
+    logger.error('Error handling AFK removal:', error);
+  }
+}
+
+async function handleAnonymousDirectMessage(message, client) {
+  try {
+    const targetChannelId = client.config?.bot?.anonymousDmChannelId;
+    if (!targetChannelId) {
+      return;
+    }
+
+    const content = message.content?.trim();
+    if (!content) {
+      await message.reply('Please send a text message. Attachments are not forwarded.');
+      return;
+    }
+
+    const targetChannel = await client.channels.fetch(targetChannelId).catch(() => null);
+    if (!targetChannel || typeof targetChannel.send !== 'function') {
+      logger.warn('Anonymous DM channel is not available or not sendable', { channelId: targetChannelId });
+      return;
+    }
+
+    await targetChannel.send({
+      embeds: [
+        {
+          title: '📥 New Anonymous Message Received',
+          description: content,
+          color: 15158332,
+          timestamp: new Date(),
+          footer: {
+            text: 'The author identity of this message has been completely hidden.',
+          },
+        },
+      ],
+    });
+
+    await message.reply('✅ Your message has been sent anonymously to the server administrators.');
+  } catch (error) {
+    logger.error('Failed to forward anonymous DM:', error);
+    await message.reply('❌ An error occurred while trying to send your message.');
+  }
 }
