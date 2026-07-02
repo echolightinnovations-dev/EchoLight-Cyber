@@ -239,6 +239,10 @@ function prepareCommandsForRegistration(commands, { multiGuild = false } = {}) {
 }
 
 async function registerGlobalCommands(client, clientId, commands, totalSubcommands) {
+    if (!client.isReady?.()) {
+        logger.warn('Discord client is not ready yet; waiting before global command registration');
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+    }
     if (!clientId) {
         throw new Error('CLIENT_ID is required for global command registration when MULTI_GUILD=true');
     }
@@ -267,6 +271,10 @@ async function registerGlobalCommands(client, clientId, commands, totalSubcomman
 }
 
 async function registerGuildCommands(client, guildId, commands, totalSubcommands) {
+    if (!client.isReady?.()) {
+        logger.warn(`Discord client is not ready yet; waiting before guild command registration for ${guildId}`);
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+    }
     logger.info(`Preparing to register ${totalSubcommands + commands.length} commands for guild ${guildId}`);
     logger.info('Validating commands before registration...');
     validateCommands(commands);
