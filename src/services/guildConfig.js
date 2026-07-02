@@ -15,6 +15,7 @@ const GUILD_CONFIG_DEFAULTS = {
     dmOnClose: true,
     disabledCommands: {},
     disabledCategories: {},
+    anonymousChannelId: null,
     logging: {
         enabled: false,
         channels: { audit: null, applications: null, reports: null },

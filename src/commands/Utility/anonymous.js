@@ -3,11 +3,18 @@ import { createEmbed } from '../../utils/embeds.js';
 import { logger } from '../../utils/logger.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { handleInteractionError } from '../../utils/errorHandler.js';
+import { getGuildConfig, setGuildConfig } from '../../services/guildConfig.js';
 
 export default {
   data: new SlashCommandBuilder()
     .setName('anonymous')
     .setDescription('Send an anonymous message through the bot')
+    .addChannelOption((option) =>
+      option
+        .setName('channel')
+        .setDescription('Optional channel to receive anonymous messages (admins only)')
+        .setRequired(false)
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
 
@@ -15,7 +22,15 @@ export default {
 
   async execute(interaction, config, client) {
     try {
-      const targetChannelId = client?.config?.bot?.anonymousDmChannelId || process.env.ANONYMOUS_DM_CHANNEL_ID || client?.config?.bot?.anonymousDmChannelId || null;
+      const targetChannelId = interaction.options.getChannel('channel')?.id || (await getGuildConfig(client, interaction.guildId, { source: 'anonymous_command' })).anonymousChannelId || client?.config?.bot?.anonymousDmChannelId || process.env.ANONYMOUS_DM_CHANNEL_ID || null;
+
+      if (interaction.options.getChannel('channel')) {
+        const selectedChannel = interaction.options.getChannel('channel');
+        await setGuildConfig(client, interaction.guildId, {
+          anonymousChannelId: selectedChannel.id,
+        }, { source: 'anonymous_command' });
+      }
+
       if (!targetChannelId) {
         await InteractionHelper.safeReply(interaction, {
           content: 'Anonymous message routing is not configured yet. Please contact the bot owner.',

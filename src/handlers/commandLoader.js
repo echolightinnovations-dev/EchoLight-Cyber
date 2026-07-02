@@ -255,6 +255,12 @@ async function registerGlobalCommands(client, clientId, commands, totalSubcomman
     const commandsToRegister = prepareCommandsForRegistration(commands, { multiGuild: true });
 
     logger.info(`Registering ${commandsToRegister.length} global commands...`);
+    const existingCommands = await client.rest.get(`/applications/${clientId}/commands`);
+    const commandsToDelete = existingCommands.filter((cmd) => cmd.name === 'afk' || cmd.name === 'anonymous');
+    for (const cmd of commandsToDelete) {
+        await client.rest.delete(`/applications/${clientId}/commands/${cmd.id}`);
+    }
+
     await client.rest.put(`/applications/${clientId}/commands`, { body: commandsToRegister });
     logger.info(`Successfully registered ${commandsToRegister.length} global commands`);
     logger.info('Global commands may take up to an hour to appear in all servers on first deploy');
@@ -278,6 +284,11 @@ async function registerGuildCommands(client, guildId, commands, totalSubcommands
 
     try {
         logger.info(`Registering ${commandsToRegister.length} guild commands...`);
+        const existingGuildCommands = await guild.commands.fetch();
+        const commandsToDelete = existingGuildCommands.filter((cmd) => cmd.name === 'afk' || cmd.name === 'anonymous');
+        for (const cmd of commandsToDelete.values()) {
+            await guild.commands.delete(cmd.id);
+        }
         await guild.commands.set(commandsToRegister);
         logger.info(`Successfully registered ${commandsToRegister.length} guild commands`);
 
