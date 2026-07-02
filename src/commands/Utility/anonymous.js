@@ -8,6 +8,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName('anonymous')
     .setDescription('Send an anonymous message through the bot')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
 
   category: 'Utility',

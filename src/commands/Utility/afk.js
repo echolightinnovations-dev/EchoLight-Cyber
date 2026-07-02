@@ -8,6 +8,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName('afk')
     .setDescription('Set or remove your AFK status')
+    .setDMPermission(true)
     .addSubcommand((subcommand) =>
       subcommand
         .setName('set')
