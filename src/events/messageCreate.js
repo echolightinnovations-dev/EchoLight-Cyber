@@ -312,8 +312,9 @@ async function handleAnonymousDirectMessage(message, client) {
     }
 
     const content = message.content?.trim();
-    if (!content) {
-      await message.reply('Please send a text message. Attachments are not forwarded.');
+    const hasAttachments = (message.attachments?.size || 0) > 0;
+    if (!content && !hasAttachments) {
+      await message.reply('Please send a text message or at least one attachment.');
       return;
     }
 
@@ -323,11 +324,12 @@ async function handleAnonymousDirectMessage(message, client) {
       return;
     }
 
+    const attachments = Array.from(message.attachments?.values?.() || []);
     await targetChannel.send({
       embeds: [
         {
           title: '📥 New Anonymous Message Received',
-          description: content,
+          description: content || 'Attachment-only message',
           color: 15158332,
           timestamp: new Date(),
           footer: {
@@ -335,6 +337,8 @@ async function handleAnonymousDirectMessage(message, client) {
           },
         },
       ],
+      files: attachments,
+      allowedMentions: { parse: [] },
     });
 
     await message.reply('✅ Your message has been sent anonymously to the server administrators.');
