@@ -15,7 +15,7 @@ export default {
 
   async execute(interaction, config, client) {
     try {
-      const targetChannelId = client.config?.bot?.anonymousDmChannelId;
+      const targetChannelId = client?.config?.bot?.anonymousDmChannelId || process.env.ANONYMOUS_DM_CHANNEL_ID || client?.config?.bot?.anonymousDmChannelId || null;
       if (!targetChannelId) {
         await InteractionHelper.safeReply(interaction, {
           content: 'Anonymous message routing is not configured yet. Please contact the bot owner.',

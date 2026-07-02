@@ -306,7 +306,7 @@ async function handleRemoveAFKStatus(message, client) {
 
 async function handleAnonymousDirectMessage(message, client) {
   try {
-    const targetChannelId = client.config?.bot?.anonymousDmChannelId;
+    const targetChannelId = client?.config?.bot?.anonymousDmChannelId || process.env.ANONYMOUS_DM_CHANNEL_ID || null;
     if (!targetChannelId) {
       return;
     }

@@ -342,13 +342,14 @@ class TitanBot extends Client {
       }
 
       const joinedGuildIds = Array.from(this.guilds.cache.keys());
-      if (joinedGuildIds.length === 0) {
+      const uniqueGuildIds = [...new Set(joinedGuildIds.filter(Boolean))];
+      if (uniqueGuildIds.length === 0) {
         logger.warn('Command registration skipped: bot is not in any guilds yet');
         return;
       }
 
-      logger.info(`No GUILD_ID configured, registering slash commands for ${joinedGuildIds.length} joined guild(s)`);
-      for (const targetGuildId of joinedGuildIds) {
+      logger.info(`No GUILD_ID configured, registering slash commands for ${uniqueGuildIds.length} joined guild(s)`);
+      for (const targetGuildId of uniqueGuildIds) {
         await registerSlashCommands(this, { clientId, guildId: targetGuildId, multiGuild: false });
       }
     } catch (error) {
