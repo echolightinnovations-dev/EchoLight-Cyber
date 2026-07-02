@@ -330,10 +330,27 @@ class TitanBot extends Client {
     try {
       const { clientId, guildId, multiGuild } = this.config.bot;
       const effectiveGuildId = guildId || process.env.GUILD_ID || null;
-      const registrationMode = multiGuild
-        ? { clientId, multiGuild: true }
-        : { clientId, guildId: effectiveGuildId, multiGuild: false };
-      await registerSlashCommands(this, registrationMode);
+
+      if (multiGuild || process.env.MULTI_GUILD === 'true') {
+        await registerSlashCommands(this, { clientId, multiGuild: true });
+        return;
+      }
+
+      if (effectiveGuildId) {
+        await registerSlashCommands(this, { clientId, guildId: effectiveGuildId, multiGuild: false });
+        return;
+      }
+
+      const joinedGuildIds = Array.from(this.guilds.cache.keys());
+      if (joinedGuildIds.length === 0) {
+        logger.warn('Command registration skipped: bot is not in any guilds yet');
+        return;
+      }
+
+      logger.info(`No GUILD_ID configured, registering slash commands for ${joinedGuildIds.length} joined guild(s)`);
+      for (const targetGuildId of joinedGuildIds) {
+        await registerSlashCommands(this, { clientId, guildId: targetGuildId, multiGuild: false });
+      }
     } catch (error) {
       logger.error('Error registering commands:', error);
     }
